@@ -7,11 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { apiClient, BookingStatus, ConsultantType } from "@/lib/api"
 import { 
-  Users, 
   BookOpen, 
   DollarSign, 
   TrendingUp, 
-  TrendingDown,
   CheckCircle,
   Clock,
   XCircle,

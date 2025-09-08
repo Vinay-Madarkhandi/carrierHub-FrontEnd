@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { apiClient } from "@/lib/api"
 
 export default function DebugPage() {
@@ -18,7 +18,7 @@ export default function DebugPage() {
     try {
       addLog("📱 User Agent: " + navigator.userAgent)
       addLog("🌐 Current URL: " + window.location.href)
-      addLog("🔗 API Base URL: " + (apiClient as any).baseURL)
+      addLog("🔗 API Base URL: " + (apiClient as unknown as { baseURL: string }).baseURL)
       
       addLog("📡 Testing connection...")
       const response = await apiClient.testConnection()

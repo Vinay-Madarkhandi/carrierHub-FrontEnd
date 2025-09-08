@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Badge } from "@/components/ui/badge";
 import { 
   GraduationCap, 
   BookOpen, 
@@ -36,7 +36,7 @@ import { ExpandableCategories } from "@/components/expandable-categories";
 
 // Map backend consultant types to frontend display
 const consultantTypeMap: Record<string, { 
-  icon: any; 
+  icon: React.ComponentType<{ className?: string }>; 
   color: string; 
   href: string;
   image: string;
@@ -389,7 +389,7 @@ export default function Home() {
                 Proven Results
               </h3>
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                Join thousands of successful students and professionals we've helped
+                Join thousands of successful students and professionals we&apos;ve helped
               </p>
             </div>
           </div>

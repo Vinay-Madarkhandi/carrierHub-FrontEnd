@@ -53,7 +53,7 @@ export default function CORSTestPage() {
       setResult(prev => prev + `   OK: ${response2.ok}\n`)
       
       if (response2.ok) {
-        const data2 = await response2.json()
+        await response2.json()
         setResult(prev => prev + `   Success: Login response received\n`)
       } else {
         const errorText = await response2.text()

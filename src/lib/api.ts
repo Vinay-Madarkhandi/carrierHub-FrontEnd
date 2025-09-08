@@ -28,12 +28,12 @@ console.log('🔧 API Configuration:', {
   hostname: typeof window !== 'undefined' ? window.location.hostname : 'Server'
 })
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message?: string
   error?: string
-  details?: any[]
+  details?: unknown[]
 }
 
 // Backend Consultant Types (matching Prisma enum)
@@ -255,7 +255,7 @@ export class ApiClient {
   async getBookings(params?: {
     page?: number
     limit?: number
-  }): Promise<ApiResponse<{ bookings: Booking[]; pagination?: any }>> {
+  }): Promise<ApiResponse<{ bookings: Booking[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }>> {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.limit) queryParams.append('limit', params.limit.toString())
@@ -297,7 +297,7 @@ export class ApiClient {
   async adminLogin(credentials: { 
     email: string
     password: string
-  }): Promise<ApiResponse<{ admin: any; token: string }>> {
+  }): Promise<ApiResponse<{ admin: { id: number; email: string; name: string }; token: string }>> {
     return this.request('/auth/admin/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
@@ -311,7 +311,7 @@ export class ApiClient {
     limit?: number
     dateFrom?: string
     dateTo?: string
-  }): Promise<ApiResponse<{ bookings: Booking[]; pagination?: any }>> {
+  }): Promise<ApiResponse<{ bookings: Booking[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }>> {
     const queryParams = new URLSearchParams()
     if (params?.status) queryParams.append('status', params.status)
     if (params?.consultantType) queryParams.append('consultantType', params.consultantType)
@@ -347,7 +347,7 @@ export class ApiClient {
   }
 
   // Test connectivity method
-  async testConnection(): Promise<ApiResponse<any>> {
+  async testConnection(): Promise<ApiResponse<unknown>> {
     console.log('🔧 Testing connection to:', this.baseURL)
     return this.request('/categories')
   }
@@ -366,7 +366,7 @@ export class ApiClient {
     dateFrom?: string
     dateTo?: string
     search?: string
-  }): Promise<ApiResponse<{ bookings: Booking[]; pagination?: any }>> {
+  }): Promise<ApiResponse<{ bookings: Booking[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }>> {
     const queryParams = new URLSearchParams()
     if (params?.status) queryParams.append('status', params.status)
     if (params?.consultantType) queryParams.append('consultantType', params.consultantType)
@@ -463,7 +463,7 @@ export class ApiClient {
     search?: string
     sortBy?: 'name' | 'email' | 'createdAt'
     sortOrder?: 'asc' | 'desc'
-  }): Promise<ApiResponse<{ users: Student[]; pagination?: any }>> {
+  }): Promise<ApiResponse<{ users: Student[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }>> {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.limit) queryParams.append('limit', params.limit.toString())
@@ -507,7 +507,7 @@ export class ApiClient {
     status?: BookingStatus
     dateFrom?: string
     dateTo?: string
-  }): Promise<ApiResponse<{ payments: Payment[]; pagination?: any }>> {
+  }): Promise<ApiResponse<{ payments: Payment[]; pagination?: { page: number; limit: number; total: number; totalPages: number } }>> {
     const queryParams = new URLSearchParams()
     if (params?.page) queryParams.append('page', params.page.toString())
     if (params?.limit) queryParams.append('limit', params.limit.toString())

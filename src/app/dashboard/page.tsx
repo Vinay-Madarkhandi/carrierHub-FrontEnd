@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,15 +29,15 @@ import {
   X
 } from "lucide-react"
 import Link from "next/link"
-import { apiClient, type Booking, type BookingStatus } from "@/lib/api"
+import { apiClient, type Booking } from "@/lib/api"
 import { useAuth } from "@/contexts/auth-context"
 import Image from "next/image"
 
 export default function DashboardPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
-  const { user, isAuthenticated, logout } = useAuth()
+  // const router = useRouter()
+  const { user, logout } = useAuth()
 
   useEffect(() => {
     if (user) {
@@ -54,7 +54,7 @@ export default function DashboardPage() {
       } else {
         toast.error(response.error || "Failed to fetch bookings")
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong")
     } finally {
       setIsLoading(false)
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                     No pending consultations
                   </h3>
                   <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                    All your consultations are either completed or you haven't booked any yet.
+                    All your consultations are either completed or you haven&apos;t booked any yet.
                   </p>
                 </CardContent>
               </Card>
@@ -472,7 +472,7 @@ export default function DashboardPage() {
                     No completed consultations
                   </h3>
                   <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                    Your completed consultations will appear here once they're finished.
+                    Your completed consultations will appear here once they&apos;re finished.
                   </p>
                 </CardContent>
               </Card>

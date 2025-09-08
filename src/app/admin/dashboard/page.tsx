@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -9,13 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { apiClient, BookingStatus, ConsultantType, Booking, Student } from "@/lib/api"
 import { 
-  Search, 
-  Filter, 
   Download, 
   RefreshCw,
   Eye,
   Edit,
-  Trash2,
   User,
   Calendar,
   DollarSign
@@ -26,34 +23,29 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [users, setUsers] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  // const [error] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">("all")
   const [typeFilter, setTypeFilter] = useState<ConsultantType | "all">("all")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const [currentPage] = useState(1)
+  // const [totalPages] = useState(1)
 
-  useEffect(() => {
-    fetchData()
-  }, [currentPage, statusFilter, typeFilter, searchTerm])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
-      setError(null)
+      // setError(null)
 
       // Fetch bookings
       const bookingsResponse = await apiClient.getAdminBookings({
         page: currentPage,
         limit: 10,
         status: statusFilter !== "all" ? statusFilter : undefined,
-        consultantType: typeFilter !== "all" ? typeFilter : undefined,
-        search: searchTerm || undefined
+        consultantType: typeFilter !== "all" ? typeFilter : undefined
       })
 
       if (bookingsResponse.success && bookingsResponse.data) {
         setBookings(bookingsResponse.data.bookings)
-        setTotalPages(bookingsResponse.data.pagination?.pages || 1)
+        // setTotalPages(bookingsResponse.data.pagination?.totalPages || 1)
       }
 
       // Fetch users
@@ -68,11 +60,15 @@ export default function AdminDashboard() {
 
     } catch (err) {
       console.error('Error fetching data:', err)
-      setError('Failed to load data')
+      // setError('Failed to load data')
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, statusFilter, typeFilter])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const handleStatusUpdate = async (bookingId: number, newStatus: BookingStatus) => {
     try {
@@ -89,7 +85,7 @@ export default function AdminDashboard() {
   const handleExport = async () => {
     try {
       const response = await apiClient.exportBookings()
-      if (response.success) {
+      if (response.success && response.data) {
         // Create download link
         const blob = new Blob([response.data], { type: 'text/csv' })
         const url = window.URL.createObjectURL(blob)

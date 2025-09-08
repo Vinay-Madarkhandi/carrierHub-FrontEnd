@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
-import { isLoggedIn, getSafeRedirect } from "@/lib/auth-utils"
+import { getSafeRedirect } from "@/lib/auth-utils"
 
 interface AuthWrapperProps {
   children: React.ReactNode

@@ -118,7 +118,7 @@ export default function LoginPage() {
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mr-2" />
                   <p className="text-sm text-blue-800 dark:text-blue-200">
-                    After signing in, you'll be redirected to complete your{" "}
+                    After signing in, you&apos;ll be redirected to complete your{" "}
                     <span className="font-semibold">
                       {next.includes('/book/') 
                         ? next.split('/book/')[1]?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())

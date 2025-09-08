@@ -25,7 +25,7 @@ interface RevenueBreakdownCardProps {
     failed: number;
     completed: number;
   };
-  bookings: any[];
+  bookings: Array<{ id: number; amount: number; status: string; consultantType: string; createdAt: string; studentId: number }>;
 }
 
 export function RevenueBreakdownCard({ 

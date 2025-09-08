@@ -3,10 +3,11 @@
 import React, { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOutsideClick } from "@/hooks/use-outside-click";
-import { cn } from "@/lib/utils";
+// import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useAuth } from "@/contexts/auth-context";
 
 interface Category {
@@ -90,7 +91,7 @@ export function ExpandableCategories({ categories }: { categories: Category[] })
               className="w-full max-w-[95vw] sm:max-w-[700px] lg:max-w-[800px] h-[95vh] sm:h-auto sm:max-h-[95vh] flex flex-col bg-white dark:bg-neutral-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
             >
               <motion.div layoutId={`image-${active.name}-${id}`}>
-                <img
+                <Image
                   width={200}
                   height={200}
                   src={active.image}
@@ -132,7 +133,7 @@ export function ExpandableCategories({ categories }: { categories: Category[] })
                     style={{ maxHeight: '200px' }}
                   >
                     <h4 className="font-semibold text-neutral-800 dark:text-neutral-200 mb-3 text-sm sm:text-base">
-                      What's Included:
+                      What&apos;s Included:
                     </h4>
                     <ul className="space-y-2">
                       {active.features.map((feature, index) => (
@@ -184,7 +185,7 @@ export function ExpandableCategories({ categories }: { categories: Category[] })
             className="group h-full flex flex-col bg-white dark:bg-gray-800 rounded-2xl cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border border-gray-200 dark:border-gray-700 overflow-hidden"
           >
             <motion.div layoutId={`image-${category.name}-${id}`} className="relative overflow-hidden">
-              <img
+              <Image
                 width={100}
                 height={100}
                 src={category.image}

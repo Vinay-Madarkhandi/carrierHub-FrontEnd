@@ -5,14 +5,14 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { 
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
+// import { 
+//   NavigationMenu,
+//   NavigationMenuContent,
+//   NavigationMenuItem,
+//   NavigationMenuLink,
+//   NavigationMenuList,
+//   NavigationMenuTrigger,
+// } from "@/components/ui/navigation-menu"
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +23,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { useAuth } from "@/contexts/auth-context"
 import { useAdmin } from "@/contexts/admin-context"
-import { LogOut, User, Settings, Shield, Menu, X, Home, BarChart3 } from "lucide-react"
+import { LogOut, Shield, Menu, X, Home, BarChart3 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useState } from "react"
 

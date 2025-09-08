@@ -13,7 +13,7 @@ import * as z from "zod"
 import { toast } from "sonner"
 import { ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
-import { apiClient, type ConsultantType, type BookingStatus } from "@/lib/api"
+import { apiClient, type ConsultantType } from "@/lib/api"
 import { useAuth } from "@/contexts/auth-context"
 
 const bookingSchema = z.object({
@@ -128,7 +128,7 @@ export default function BookingPage({ params }: { params: Promise<{ categoryId: 
         // Create payment order using backend API
         const paymentResponse = await apiClient.createPaymentOrder(bookingId)
 
-        if (paymentResponse.success) {
+        if (paymentResponse.success && paymentResponse.data) {
           await handleRazorpayPayment(paymentResponse.data, bookingId)
         } else {
           toast.error(paymentResponse.error || "Failed to create payment order")
@@ -136,14 +136,14 @@ export default function BookingPage({ params }: { params: Promise<{ categoryId: 
       } else {
         toast.error(bookingResponse.error || "Failed to create booking")
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleRazorpayPayment = async (order: any, bookingId: number) => {
+  const handleRazorpayPayment = async (order: { orderId: string; amount: number; currency: string }, bookingId: number) => {
     const options = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       amount: order.amount,
@@ -151,7 +151,7 @@ export default function BookingPage({ params }: { params: Promise<{ categoryId: 
       name: "CarrierHub",
       description: `Consultation: ${category?.title || 'Unknown Category'}`,
       order_id: order.orderId,
-      handler: async (response: any) => {
+      handler: async (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) => {
         try {
           const paymentResponse = await apiClient.verifyPayment({
             razorpay_payment_id: response.razorpay_payment_id,
@@ -166,7 +166,7 @@ export default function BookingPage({ params }: { params: Promise<{ categoryId: 
           } else {
             toast.error(paymentResponse.error || "Payment verification failed")
           }
-        } catch (error) {
+        } catch {
           toast.error("Payment verification failed")
         }
       },
@@ -180,7 +180,7 @@ export default function BookingPage({ params }: { params: Promise<{ categoryId: 
       },
     }
 
-    const razorpay = new (window as any).Razorpay(options)
+    const razorpay = new (window as unknown as { Razorpay: new (options: unknown) => { open: () => void } }).Razorpay(options)
     razorpay.open()
   }
 
@@ -194,7 +194,7 @@ export default function BookingPage({ params }: { params: Promise<{ categoryId: 
                 Category Not Found
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                The consultation category you're looking for doesn't exist.
+                The consultation category you&apos;re looking for doesn&apos;t exist.
               </p>
               <Button asChild>
                 <Link href="/">Go Back Home</Link>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -30,7 +30,7 @@ export default function AdminPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [paymentFilter, setPaymentFilter] = useState("all")
-  const router = useRouter()
+  // const router = useRouter()
   const { admin, isAuthenticated, logout } = useAdmin()
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function AdminPage() {
       } else {
         toast.error(response.error || "Failed to fetch bookings")
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong")
     } finally {
       setIsLoading(false)
@@ -78,7 +78,7 @@ export default function AdminPage() {
       } else {
         toast.error(response.error || "Failed to update booking status")
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong")
     }
   }
