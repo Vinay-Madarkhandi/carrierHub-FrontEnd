@@ -17,19 +17,20 @@ export interface AppError {
   type: 'network' | 'validation' | 'auth' | 'payment' | 'server' | 'client';
   message: string;
   details?: ErrorDetails[];
-  originalError?: any;
+  originalError?: unknown;
   context?: string;
 }
 
 class ErrorHandler {
   // Network-related errors
-  static handleNetworkError(error: any, context?: string): AppError {
+  static handleNetworkError(error: unknown, context?: string): AppError {
     let message = "Network connection error. Please check your internet connection.";
     
-    if (error?.message) {
-      if (error.message.includes('Failed to fetch')) {
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as Error).message;
+      if (errorMessage.includes('Failed to fetch')) {
         message = "Unable to connect to the server. Please try again later.";
-      } else if (error.message.includes('timeout')) {
+      } else if (errorMessage.includes('timeout')) {
         message = "Request timed out. The server may be busy, please try again.";
       }
     }
@@ -46,15 +47,16 @@ class ErrorHandler {
   }
 
   // Authentication errors
-  static handleAuthError(error: any, context?: string): AppError {
+  static handleAuthError(error: unknown, context?: string): AppError {
     let message = "Authentication failed. Please log in again.";
     
-    if (error?.message) {
-      if (error.message.includes('invalid_token') || error.message.includes('expired')) {
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as Error).message;
+      if (errorMessage.includes('invalid_token') || errorMessage.includes('expired')) {
         message = "Your session has expired. Please log in again.";
-      } else if (error.message.includes('unauthorized')) {
+      } else if (errorMessage.includes('unauthorized')) {
         message = "You don't have permission to perform this action.";
-      } else if (error.message.includes('invalid_credentials')) {
+      } else if (errorMessage.includes('invalid_credentials')) {
         message = "Invalid email or password. Please check and try again.";
       }
     }
@@ -71,17 +73,18 @@ class ErrorHandler {
   }
 
   // Payment-related errors
-  static handlePaymentError(error: any, context?: string): AppError {
+  static handlePaymentError(error: unknown, context?: string): AppError {
     let message = "Payment processing failed. Please try again.";
     
-    if (error?.message) {
-      if (error.message.includes('insufficient_funds')) {
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as Error).message;
+      if (errorMessage.includes('insufficient_funds')) {
         message = "Insufficient funds. Please check your account balance.";
-      } else if (error.message.includes('invalid_card')) {
+      } else if (errorMessage.includes('invalid_card')) {
         message = "Invalid card details. Please check and try again.";
-      } else if (error.message.includes('declined')) {
+      } else if (errorMessage.includes('declined')) {
         message = "Payment was declined. Please try a different payment method.";
-      } else if (error.message.includes('timeout')) {
+      } else if (errorMessage.includes('timeout')) {
         message = "Payment timed out. Please check your payment status in your account.";
       }
     }
@@ -98,19 +101,28 @@ class ErrorHandler {
   }
 
   // Validation errors
-  static handleValidationError(error: any, context?: string): AppError {
+  static handleValidationError(error: unknown, context?: string): AppError {
     let message = "Please check your input and try again.";
     let details: ErrorDetails[] = [];
 
-    if (error?.details && Array.isArray(error.details)) {
-      details = error.details.map((detail: any) => ({
-        field: detail.field || detail.path?.[0],
-        message: detail.message,
-        suggestion: this.getFieldSuggestion(detail.field || detail.path?.[0])
-      }));
-      
-      if (details.length > 0) {
-        message = `Please fix the following: ${details.map(d => d.message).join(', ')}`;
+    if (error && typeof error === 'object' && 'details' in error) {
+      const errorDetails = (error as { details?: unknown[] }).details;
+      if (errorDetails && Array.isArray(errorDetails)) {
+        details = errorDetails.map((detail: unknown) => {
+          if (detail && typeof detail === 'object') {
+            const detailObj = detail as Record<string, unknown>;
+            return {
+              field: (detailObj.field as string) || (Array.isArray(detailObj.path) ? detailObj.path[0] as string : undefined),
+              message: detailObj.message as string,
+              suggestion: this.getFieldSuggestion((detailObj.field as string) || (Array.isArray(detailObj.path) ? detailObj.path[0] as string : ''))
+            };
+          }
+          return { message: String(detail) };
+        });
+        
+        if (details.length > 0) {
+          message = `Please fix the following: ${details.map(d => d.message).join(', ')}`;
+        }
       }
     }
 
@@ -127,15 +139,16 @@ class ErrorHandler {
   }
 
   // Server errors
-  static handleServerError(error: any, context?: string): AppError {
+  static handleServerError(error: unknown, context?: string): AppError {
     let message = "Server error occurred. Please try again later.";
     
-    if (error?.status) {
-      if (error.status >= 500) {
+    if (error && typeof error === 'object' && 'status' in error) {
+      const status = (error as { status: number }).status;
+      if (status >= 500) {
         message = "Server is temporarily unavailable. Please try again later.";
-      } else if (error.status === 429) {
+      } else if (status === 429) {
         message = "Too many requests. Please wait a moment before trying again.";
-      } else if (error.status === 404) {
+      } else if (status === 404) {
         message = "The requested resource was not found.";
       }
     }
@@ -152,32 +165,56 @@ class ErrorHandler {
   }
 
   // Generic error handler that determines error type
-  static handle(error: any, context?: string): AppError {
+  static handle(error: unknown, context?: string): AppError {
+    // Type guard for error objects
+    const isErrorObject = (err: unknown): err is Record<string, unknown> => {
+      return err !== null && typeof err === 'object';
+    };
+
     // Check error type and route to appropriate handler
-    if (error?.name === 'NetworkError' || error?.message?.includes('fetch')) {
-      return this.handleNetworkError(error, context);
-    }
-    
-    if (error?.status === 401 || error?.message?.includes('unauthorized') || error?.message?.includes('auth')) {
-      return this.handleAuthError(error, context);
-    }
-    
-    if (error?.type === 'payment' || error?.message?.includes('payment') || error?.message?.includes('razorpay')) {
-      return this.handlePaymentError(error, context);
-    }
-    
-    if (error?.type === 'validation' || error?.details || error?.message?.includes('validation')) {
-      return this.handleValidationError(error, context);
-    }
-    
-    if (error?.status >= 500) {
-      return this.handleServerError(error, context);
+    if (isErrorObject(error)) {
+      const errorObj = error as Record<string, unknown>;
+      const errorMessage = errorObj.message as string;
+      const errorName = errorObj.name as string;
+      const errorStatus = errorObj.status as number;
+      const errorType = errorObj.type as string;
+
+      if (errorName === 'NetworkError' || (errorMessage && errorMessage.includes('fetch'))) {
+        return this.handleNetworkError(error, context);
+      }
+      
+      if (errorStatus === 401 || (errorMessage && (errorMessage.includes('unauthorized') || errorMessage.includes('auth')))) {
+        return this.handleAuthError(error, context);
+      }
+      
+      if (errorType === 'payment' || (errorMessage && (errorMessage.includes('payment') || errorMessage.includes('razorpay')))) {
+        return this.handlePaymentError(error, context);
+      }
+      
+      if (errorType === 'validation' || errorObj.details || (errorMessage && errorMessage.includes('validation'))) {
+        return this.handleValidationError(error, context);
+      }
+      
+      if (errorStatus && errorStatus >= 500) {
+        return this.handleServerError(error, context);
+      }
+
+      // Default client error with proper message extraction
+      const appError: AppError = {
+        type: 'client',
+        message: errorMessage || 'An unexpected error occurred. Please try again.',
+        originalError: error,
+        context
+      };
+
+      logger.error('Client Error', { error: appError, originalError: error });
+      return appError;
     }
 
-    // Default client error
+    // Handle non-object errors
     const appError: AppError = {
       type: 'client',
-      message: error?.message || 'An unexpected error occurred. Please try again.',
+      message: 'An unexpected error occurred. Please try again.',
       originalError: error,
       context
     };
@@ -187,8 +224,8 @@ class ErrorHandler {
   }
 
   // Display error to user with appropriate UI
-  static show(error: AppError | any, fallbackMessage?: string): void {
-    const appError = error.type ? error : this.handle(error);
+  static show(error: AppError | unknown, fallbackMessage?: string): void {
+    const appError = (error && typeof error === 'object' && 'type' in error) ? error as AppError : this.handle(error);
     
     // Show toast based on error type
     switch (appError.type) {

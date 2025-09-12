@@ -114,7 +114,7 @@ class AdminApiClient {
   async login(credentials: { 
     email: string; 
     password: string; 
-  }): Promise<AdminApiResponse<{ admin: any; token: string }>> {
+  }): Promise<AdminApiResponse<{ admin: Record<string, unknown>; token: string }>> {
     return this.request('/admin/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
@@ -142,21 +142,21 @@ class AdminApiClient {
   }
 
   // Student management
-  async getAllStudents(): Promise<AdminApiResponse<{ students: any[] }>> {
+  async getAllStudents(): Promise<AdminApiResponse<{ students: Record<string, unknown>[] }>> {
     return this.request('/admin/students');
   }
 
   // Payments management  
-  async getAllPayments(): Promise<AdminApiResponse<{ payments: any[] }>> {
+  async getAllPayments(): Promise<AdminApiResponse<{ payments: Record<string, unknown>[] }>> {
     return this.request('/admin/payments');
   }
 
   // Revenue analytics
-  async getRevenueStats(): Promise<AdminApiResponse<any>> {
+  async getRevenueStats(): Promise<AdminApiResponse<Record<string, unknown>>> {
     return this.request('/admin/revenue/stats');
   }
 
-  async getRevenueBreakdown(): Promise<AdminApiResponse<any>> {
+  async getRevenueBreakdown(): Promise<AdminApiResponse<Record<string, unknown>>> {
     return this.request('/admin/revenue/breakdown');
   }
 

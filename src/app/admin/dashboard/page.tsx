@@ -1,38 +1,58 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { apiClient, BookingStatus, ConsultantType, Booking, Student } from "@/lib/api"
-import { 
-  Download, 
+import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  apiClient,
+  BookingStatus,
+  ConsultantType,
+  Booking,
+  Student,
+} from "@/lib/api";
+import {
+  Download,
   RefreshCw,
   Eye,
   Edit,
   User,
   Calendar,
-  DollarSign
-} from "lucide-react"
-import DashboardStats from "@/components/dashboard-stats"
+  DollarSign,
+} from "lucide-react";
+import DashboardStats from "@/components/dashboard-stats";
 
 export default function AdminDashboard() {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [users, setUsers] = useState<Student[]>([])
-  const [loading, setLoading] = useState(true)
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [users, setUsers] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
   // const [error] = useState<string | null>(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">("all")
-  const [typeFilter, setTypeFilter] = useState<ConsultantType | "all">("all")
-  const [currentPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<BookingStatus | "all">(
+    "all"
+  );
+  const [typeFilter, setTypeFilter] = useState<ConsultantType | "all">("all");
+  const [currentPage] = useState(1);
   // const [totalPages] = useState(1)
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       // setError(null)
 
       // Fetch bookings
@@ -40,74 +60,81 @@ export default function AdminDashboard() {
         page: currentPage,
         limit: 10,
         status: statusFilter !== "all" ? statusFilter : undefined,
-        consultantType: typeFilter !== "all" ? typeFilter : undefined
-      })
+        consultantType: typeFilter !== "all" ? typeFilter : undefined,
+      });
 
       if (bookingsResponse.success && bookingsResponse.data) {
-        setBookings(bookingsResponse.data.bookings)
+        setBookings(bookingsResponse.data.bookings);
         // setTotalPages(bookingsResponse.data.pagination?.totalPages || 1)
       }
 
       // Fetch users
       const usersResponse = await apiClient.getAllUsers({
         page: 1,
-        limit: 10
-      })
+        limit: 10,
+      });
 
       if (usersResponse.success && usersResponse.data) {
-        setUsers(usersResponse.data.users)
+        setUsers(usersResponse.data.users);
       }
-
     } catch (err) {
-      console.error('Error fetching data:', err)
+      console.error("Error fetching data:", err);
       // setError('Failed to load data')
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [currentPage, statusFilter, typeFilter])
+  }, [currentPage, statusFilter, typeFilter]);
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    fetchData();
+  }, [fetchData]);
 
-  const handleStatusUpdate = async (bookingId: number, newStatus: BookingStatus) => {
+  const handleStatusUpdate = async (
+    bookingId: number,
+    newStatus: BookingStatus
+  ) => {
     try {
-      const response = await apiClient.updateBookingStatus(bookingId, newStatus)
+      const response = await apiClient.updateBookingStatus(
+        bookingId,
+        newStatus
+      );
       if (response.success) {
         // Refresh data
-        fetchData()
+        fetchData();
       }
     } catch (err) {
-      console.error('Error updating status:', err)
+      console.error("Error updating status:", err);
     }
-  }
+  };
 
   const handleExport = async () => {
     try {
-      const response = await apiClient.exportBookings()
+      const response = await apiClient.exportBookings();
       if (response.success && response.data) {
         // Create download link
-        const blob = new Blob([response.data], { type: 'text/csv' })
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `bookings-export-${new Date().toISOString().split('T')[0]}.csv`
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        window.URL.revokeObjectURL(url)
+        const blob = new Blob([response.data], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `bookings-export-${
+          new Date().toISOString().split("T")[0]
+        }.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
       }
     } catch (err) {
-      console.error('Error exporting data:', err)
+      console.error("Error exporting data:", err);
     }
-  }
+  };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount / 100)
-  }
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(amount / 100);
+  };
 
   const getStatusBadge = (status: BookingStatus) => {
     const statusConfig = {
@@ -115,38 +142,46 @@ export default function AdminDashboard() {
       PROCESSING: { variant: "default" as const, text: "Processing" },
       SUCCESS: { variant: "default" as const, text: "Success" },
       FAILED: { variant: "destructive" as const, text: "Failed" },
-      COMPLETED: { variant: "default" as const, text: "Completed" }
-    }
+      COMPLETED: { variant: "default" as const, text: "Completed" },
+    };
 
-    const config = statusConfig[status]
-    return <Badge variant={config.variant}>{config.text}</Badge>
-  }
+    const config = statusConfig[status];
+    return <Badge variant={config.variant}>{config.text}</Badge>;
+  };
 
   const getConsultantTypeLabel = (type: ConsultantType) => {
-    return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-  }
+    return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  };
 
   // Memoized filtered bookings for performance
   const filteredBookings = useMemo(() => {
-    return bookings.filter(booking => {
-      const matchesSearch = !searchTerm || 
-        booking.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        booking.student?.email?.toLowerCase().includes(searchTerm.toLowerCase())
-      
-      const matchesStatus = statusFilter === "all" || booking.status === statusFilter
-      const matchesType = typeFilter === "all" || booking.consultantType === typeFilter
-      
-      return matchesSearch && matchesStatus && matchesType
-    })
-  }, [bookings, searchTerm, statusFilter, typeFilter])
+    return bookings.filter((booking) => {
+      const matchesSearch =
+        !searchTerm ||
+        booking.student?.name
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        booking.student?.email
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || booking.status === statusFilter;
+      const matchesType =
+        typeFilter === "all" || booking.consultantType === typeFilter;
+
+      return matchesSearch && matchesStatus && matchesType;
+    });
+  }, [bookings, searchTerm, statusFilter, typeFilter]);
 
   // Memoized filtered users for performance
   const filteredUsers = useMemo(() => {
-    return users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [users, searchTerm])
+    return users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
 
   if (loading && bookings.length === 0) {
     return (
@@ -156,7 +191,7 @@ export default function AdminDashboard() {
           <p>Loading dashboard...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -164,7 +199,9 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage bookings, users, and system settings</p>
+          <p className="text-gray-600">
+            Manage bookings, users, and system settings
+          </p>
         </div>
         <div className="flex space-x-2">
           <Button onClick={fetchData} variant="outline" size="sm">
@@ -207,7 +244,12 @@ export default function AdminDashboard() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-64"
                   />
-                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as BookingStatus | "all")}>
+                  <Select
+                    value={statusFilter}
+                    onValueChange={(value) =>
+                      setStatusFilter(value as BookingStatus | "all")
+                    }
+                  >
                     <SelectTrigger className="w-32">
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -220,21 +262,42 @@ export default function AdminDashboard() {
                       <SelectItem value="COMPLETED">Completed</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Select value={typeFilter} onValueChange={(value) => setTypeFilter(value as ConsultantType | "all")}>
+                  <Select
+                    value={typeFilter}
+                    onValueChange={(value) =>
+                      setTypeFilter(value as ConsultantType | "all")
+                    }
+                  >
                     <SelectTrigger className="w-40">
                       <SelectValue placeholder="Type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Types</SelectItem>
-                      <SelectItem value="CAREER_GUIDANCE">Career Guidance</SelectItem>
-                      <SelectItem value="COLLEGE_COURSE">College Course</SelectItem>
-                      <SelectItem value="EXAM_PREPARATION">Exam Preparation</SelectItem>
+                      <SelectItem value="CAREER_GUIDANCE">
+                        Career Guidance
+                      </SelectItem>
+                      <SelectItem value="COLLEGE_COURSE">
+                        College Course
+                      </SelectItem>
+                      <SelectItem value="EXAM_PREPARATION">
+                        Exam Preparation
+                      </SelectItem>
                       <SelectItem value="STUDY_ABROAD">Study Abroad</SelectItem>
-                      <SelectItem value="SKILL_MENTORSHIP">Skill Mentorship</SelectItem>
-                      <SelectItem value="JOB_PLACEMENT">Job Placement</SelectItem>
-                      <SelectItem value="GOVERNMENT_JOBS">Government Jobs</SelectItem>
-                      <SelectItem value="PERSONAL_GROWTH">Personal Growth</SelectItem>
-                      <SelectItem value="ALTERNATIVE_CAREERS">Alternative Careers</SelectItem>
+                      <SelectItem value="SKILL_MENTORSHIP">
+                        Skill Mentorship
+                      </SelectItem>
+                      <SelectItem value="JOB_PLACEMENT">
+                        Job Placement
+                      </SelectItem>
+                      <SelectItem value="GOVERNMENT_JOBS">
+                        Government Jobs
+                      </SelectItem>
+                      <SelectItem value="PERSONAL_GROWTH">
+                        Personal Growth
+                      </SelectItem>
+                      <SelectItem value="ALTERNATIVE_CAREERS">
+                        Alternative Careers
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -248,12 +311,15 @@ export default function AdminDashboard() {
               ) : (
                 <div className="space-y-4">
                   {filteredBookings.map((booking) => (
-                    <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={booking.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-4">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <h4 className="font-semibold">
-                              {booking.student?.name || 'Unknown Student'}
+                              {booking.student?.name || "Unknown Student"}
                             </h4>
                             {getStatusBadge(booking.status)}
                           </div>
@@ -264,7 +330,8 @@ export default function AdminDashboard() {
                             {booking.student?.email} • {booking.student?.phone}
                           </p>
                           <p className="text-xs text-gray-500 mt-1">
-                            {new Date(booking.createdAt).toLocaleDateString()} at{' '}
+                            {new Date(booking.createdAt).toLocaleDateString()}{" "}
+                            at{" "}
                             {new Date(booking.createdAt).toLocaleTimeString()}
                           </p>
                         </div>
@@ -281,17 +348,26 @@ export default function AdminDashboard() {
                         <div className="flex space-x-1">
                           <Select
                             value={booking.status}
-                            onValueChange={(value) => handleStatusUpdate(booking.id, value as BookingStatus)}
+                            onValueChange={(value) =>
+                              handleStatusUpdate(
+                                booking.id,
+                                value as BookingStatus
+                              )
+                            }
                           >
                             <SelectTrigger className="w-32">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="PENDING">Pending</SelectItem>
-                              <SelectItem value="PROCESSING">Processing</SelectItem>
+                              <SelectItem value="PROCESSING">
+                                Processing
+                              </SelectItem>
                               <SelectItem value="SUCCESS">Success</SelectItem>
                               <SelectItem value="FAILED">Failed</SelectItem>
-                              <SelectItem value="COMPLETED">Completed</SelectItem>
+                              <SelectItem value="COMPLETED">
+                                Completed
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                           <Button variant="outline" size="sm">
@@ -324,7 +400,10 @@ export default function AdminDashboard() {
               ) : (
                 <div className="space-y-4">
                   {filteredUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div
+                      key={user.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                           <User className="h-5 w-5 text-gray-600" />
@@ -334,7 +413,8 @@ export default function AdminDashboard() {
                           <p className="text-sm text-gray-600">{user.email}</p>
                           <p className="text-xs text-gray-500">{user.phone}</p>
                           <p className="text-xs text-gray-500">
-                            Joined: {new Date(user.createdAt).toLocaleDateString()}
+                            Joined:{" "}
+                            {new Date(user.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -390,5 +470,5 @@ export default function AdminDashboard() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

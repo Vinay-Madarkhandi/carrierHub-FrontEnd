@@ -14,11 +14,12 @@ import {
   TrendingUp,
   Lightbulb,
 } from "lucide-react";
+import React from "react";
 
 import { type ConsultantType } from "@/lib/api";
 
 export interface ConsultantTypeConfig {
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   href: string;
   image: string;

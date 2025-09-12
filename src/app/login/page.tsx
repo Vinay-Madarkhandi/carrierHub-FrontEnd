@@ -1,46 +1,52 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { toast } from "sonner"
-import { apiClient } from "@/lib/api"
-import { useAuth } from "@/contexts/auth-context"
-import { CheckCircle } from "lucide-react"
-import { isLoggedIn, getSafeRedirect } from "@/lib/auth-utils"
-import { logger } from '@/lib/logger'
-import { BorderBeam } from "@/components/magicui/border-beam"
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "sonner";
+import { apiClient } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+import { CheckCircle } from "lucide-react";
+import { isLoggedIn, getSafeRedirect } from "@/lib/auth-utils";
+import { logger } from "@/lib/logger";
+import { BorderBeam } from "@/components/magicui/border-beam";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
-})
+});
 
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { login } = useAuth();
 
   // Get the 'next' parameter from URL
-  const next = searchParams.get('next')
+  const next = searchParams.get("next");
 
   useEffect(() => {
     // If already logged in, redirect to next or dashboard
     if (isLoggedIn()) {
-      const dest = getSafeRedirect(next)
-      router.replace(dest)
+      const dest = getSafeRedirect(next);
+      router.replace(dest);
     }
-  }, [next, router])
+  }, [next, router]);
 
   const {
     register,
@@ -48,47 +54,49 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-  })
+  });
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true)
-    logger.authAction('Login attempt', { email: data.email })
-    
+    setIsLoading(true);
+    logger.authAction("Login attempt", { email: data.email });
+
     try {
       const response = await apiClient.login({
         email: data.email,
         password: data.password,
-      })
+      });
 
-      logger.authAction('Login response received', { success: response.success })
+      logger.authAction("Login response received", {
+        success: response.success,
+      });
 
       if (response.success && response.data) {
         // Backend returns { student, token }
         if (response.data.token && response.data.student) {
           // Use the auth context to update state
-          login(response.data.token, response.data.student)
-          
-          toast.success("Login successful!")
-          
+          login(response.data.token, response.data.student);
+
+          toast.success("Login successful!");
+
           // Redirect to intended destination or dashboard
-          const dest = getSafeRedirect(next, '/dashboard')
-          logger.authAction('Redirecting after login', { destination: dest })
-          router.replace(dest)
+          const dest = getSafeRedirect(next, "/dashboard");
+          logger.authAction("Redirecting after login", { destination: dest });
+          router.replace(dest);
         } else {
-          logger.error('Invalid login response structure', response.data)
-          toast.error("Invalid response from server")
+          logger.error("Invalid login response structure", response.data);
+          toast.error("Invalid response from server");
         }
       } else {
-        console.error('🔐 Login failed:', response.error)
-        toast.error(response.error || "Invalid credentials")
+        console.error("🔐 Login failed:", response.error);
+        toast.error(response.error || "Invalid credentials");
       }
     } catch (error) {
-      console.error('🔐 Login error:', error)
-      toast.error("Something went wrong. Please try again.")
+      console.error("🔐 Login error:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -121,10 +129,12 @@ export default function LoginPage() {
                   <p className="text-sm text-blue-800 dark:text-blue-200">
                     After signing in, you&apos;ll be redirected to complete your{" "}
                     <span className="font-semibold">
-                      {next.includes('/book/') 
-                        ? next.split('/book/')[1]?.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
-                        : 'intended page'
-                      }
+                      {next.includes("/book/")
+                        ? next
+                            .split("/book/")[1]
+                            ?.replace("-", " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())
+                        : "intended page"}
                     </span>{" "}
                     request.
                   </p>
@@ -169,9 +179,14 @@ export default function LoginPage() {
               </Button>
             </form>
           </CardContent>
-          <BorderBeam duration={8} size={100} colorFrom="#3b82f6" colorTo="#8b5cf6" />
+          <BorderBeam
+            duration={8}
+            size={100}
+            colorFrom="#3b82f6"
+            colorTo="#8b5cf6"
+          />
         </Card>
       </div>
     </div>
-  )
+  );
 }

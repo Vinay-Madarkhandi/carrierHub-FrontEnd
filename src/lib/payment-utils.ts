@@ -130,7 +130,7 @@ export const createRazorpayOptions = (
   callbacks: {
     onSuccess: (response: RazorpayResponse) => void;
     onDismiss?: () => void;
-    onError?: (error: any) => void;
+    onError?: (error: unknown) => void;
   },
   description: string = "Payment for CarrierHub services"
 ): RazorpayOptions => {

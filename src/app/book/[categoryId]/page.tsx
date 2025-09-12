@@ -26,7 +26,6 @@ import {
   createRazorpayOptions,
   validatePaymentData,
   PaymentErrors,
-  formatCurrency,
   type RazorpayResponse,
   type PaymentOrder,
 } from "@/lib/payment-utils";
@@ -56,14 +55,14 @@ const categoryIdToTypeMap: Record<string, ConsultantType> = {
 // Default pricing (in paise - aligned with backend pricing)
 // Backend: ₹500-1200, Frontend: ₹500-1200 (consistent)
 const defaultPricing: Record<ConsultantType, number> = {
-  CAREER_GUIDANCE: 50000,     // ₹500
-  COLLEGE_COURSE: 80000,      // ₹800  
-  EXAM_PREPARATION: 60000,    // ₹600
-  STUDY_ABROAD: 120000,       // ₹1200
-  SKILL_MENTORSHIP: 70000,    // ₹700
-  JOB_PLACEMENT: 90000,       // ₹900
-  GOVERNMENT_JOBS: 60000,     // ₹600
-  PERSONAL_GROWTH: 50000,     // ₹500
+  CAREER_GUIDANCE: 50000, // ₹500
+  COLLEGE_COURSE: 80000, // ₹800
+  EXAM_PREPARATION: 60000, // ₹600
+  STUDY_ABROAD: 120000, // ₹1200
+  SKILL_MENTORSHIP: 70000, // ₹700
+  JOB_PLACEMENT: 90000, // ₹900
+  GOVERNMENT_JOBS: 60000, // ₹600
+  PERSONAL_GROWTH: 50000, // ₹500
   ALTERNATIVE_CAREERS: 60000, // ₹600
 };
 
@@ -132,7 +131,6 @@ export default function BookingPage({
     register,
     handleSubmit,
     formState: { errors },
-    getValues,
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {

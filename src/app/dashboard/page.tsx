@@ -38,13 +38,6 @@ import { apiClient, type Booking } from "@/lib/api";
 import { useAuth } from "@/contexts/auth-context";
 import Image from "next/image";
 
-// Loading component for dashboard sections
-const DashboardLoader = () => (
-  <div className="flex items-center justify-center p-8">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-  </div>
-);
-
 export default function DashboardPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);

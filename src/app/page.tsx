@@ -36,7 +36,8 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { apiClient, type Category } from "@/lib/api";
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
+import { fallbackCategories } from "@/lib/consultant-types";
 
 // Lazy load heavy components
 const TestimonialsSection = lazy(() =>
@@ -238,74 +239,32 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [isOfflineMode, setIsOfflineMode] = useState(false);
 
-  // Fallback categories when API is unavailable
-  const fallbackCategories: Category[] = [
-    {
-      type: "CAREER_GUIDANCE",
-      title: "Career Guidance",
-      description: "Get personalized career advice and planning",
-    },
-    {
-      type: "COLLEGE_COURSE",
-      title: "College Course Selection",
-      description: "Choose the right course for your future",
-    },
-    {
-      type: "EXAM_PREPARATION",
-      title: "Exam Preparation",
-      description: "Strategic preparation for competitive exams",
-    },
-    {
-      type: "STUDY_ABROAD",
-      title: "Study Abroad",
-      description: "Complete guidance for international education",
-    },
-    {
-      type: "SKILL_MENTORSHIP",
-      title: "Skill Mentorship",
-      description: "Develop industry-relevant skills with experts",
-    },
-    {
-      type: "JOB_PLACEMENT",
-      title: "Job Placement",
-      description: "Land your dream job with expert guidance",
-    },
-    {
-      type: "GOVERNMENT_JOBS",
-      title: "Government Jobs",
-      description: "Prepare for government sector opportunities",
-    },
-    {
-      type: "PERSONAL_GROWTH",
-      title: "Personal Growth",
-      description: "Enhance your personality and soft skills",
-    },
-    {
-      type: "ALTERNATIVE_CAREERS",
-      title: "Alternative Careers",
-      description: "Explore unconventional career paths",
-    },
-  ];
-
   // Memoized fetch function
   const fetchCategories = useCallback(async () => {
     logger.debug("Fetching categories...");
     try {
       const response = await apiClient.getCategories();
-      logger.debug("Categories response received", { success: response.success });
+      logger.debug("Categories response received", {
+        success: response.success,
+      });
 
       if (response.success && response.data?.categories) {
         setCategories(response.data.categories);
-        logger.info("Categories loaded successfully", { count: response.data.categories.length });
+        logger.info("Categories loaded successfully", {
+          count: response.data.categories.length,
+        });
         setIsOfflineMode(false);
       } else {
-        logger.warn("API unavailable, using fallback categories", response.error);
+        logger.warn(
+          "API unavailable, using fallback categories",
+          response.error
+        );
         // Use fallback categories when API fails
         setCategories(fallbackCategories);
         setIsOfflineMode(true);
       }
     } catch (error) {
-      console.error("📂 Failed to fetch categories, using fallback:", error);
+      logger.error("Failed to fetch categories, using fallback", error);
       // Use fallback categories when API fails
       setCategories(fallbackCategories);
       setIsOfflineMode(true);
@@ -317,7 +276,7 @@ export default function Home() {
   useEffect(() => {
     // Add timeout to prevent infinite loading
     const timeout = setTimeout(() => {
-      console.warn("📂 Categories fetch timeout, setting loading to false");
+      logger.warn("Categories fetch timeout, setting loading to false");
       setIsLoading(false);
     }, 15000); // 15 second timeout
 
