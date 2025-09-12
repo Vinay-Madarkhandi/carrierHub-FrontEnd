@@ -2,14 +2,14 @@
 
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, Suspense } from "react"
 import { getSafeRedirect } from "@/lib/auth-utils"
 
 interface AuthWrapperProps {
   children: React.ReactNode
 }
 
-export function AuthWrapper({ children }: AuthWrapperProps) {
+function AuthWrapperContent({ children }: AuthWrapperProps) {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -31,7 +31,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       router.push(`/login?next=${encodeURIComponent(fullPath)}`)
     } else if (isAuthRoute && isAuthenticated) {
       // Get next parameter from URL
-      const next = searchParams.get('next')
+      const next = searchParams?.get('next') || null
       
       // Redirect to intended destination or dashboard
       const dest = getSafeRedirect(next, '/dashboard')
@@ -59,4 +59,16 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   }
 
   return <>{children}</>
+}
+
+export function AuthWrapper({ children }: AuthWrapperProps) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <AuthWrapperContent>{children}</AuthWrapperContent>
+    </Suspense>
+  )
 }
