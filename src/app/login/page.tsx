@@ -15,6 +15,7 @@ import { apiClient } from "@/lib/api"
 import { useAuth } from "@/contexts/auth-context"
 import { CheckCircle } from "lucide-react"
 import { isLoggedIn, getSafeRedirect } from "@/lib/auth-utils"
+import { logger } from '@/lib/logger'
 import { BorderBeam } from "@/components/magicui/border-beam"
 
 const loginSchema = z.object({
@@ -51,7 +52,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
-    console.log('🔐 Attempting login with:', { email: data.email, apiUrl: 'https://carrierhub-backend.onrender.com/api' })
+    logger.authAction('Login attempt', { email: data.email })
     
     try {
       const response = await apiClient.login({
@@ -59,7 +60,7 @@ export default function LoginPage() {
         password: data.password,
       })
 
-      console.log('🔐 Login response:', response)
+      logger.authAction('Login response received', { success: response.success })
 
       if (response.success && response.data) {
         // Backend returns { student, token }
@@ -71,10 +72,10 @@ export default function LoginPage() {
           
           // Redirect to intended destination or dashboard
           const dest = getSafeRedirect(next, '/dashboard')
-          console.log('🔐 Redirecting to:', dest)
+          logger.authAction('Redirecting after login', { destination: dest })
           router.replace(dest)
         } else {
-          console.error('🔐 Invalid response structure:', response.data)
+          logger.error('Invalid login response structure', response.data)
           toast.error("Invalid response from server")
         }
       } else {

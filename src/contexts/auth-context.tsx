@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { logout as logoutUtil } from "@/lib/auth-utils"
 
@@ -63,30 +63,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = (token: string, userData: User) => {
+  const login = useCallback((token: string, userData: User) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(userData))
     }
     setUser(userData)
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
     }
     setUser(null)
     logoutUtil(router)
-  }
+  }, [router])
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     isAuthenticated: !!user,
     isLoading,
     login,
     logout
-  }
+  }), [user, isLoading, login, logout])
 
   return (
     <AuthContext.Provider value={value}>

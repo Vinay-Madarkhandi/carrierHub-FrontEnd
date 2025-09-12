@@ -1,16 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-// import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { toast } from "sonner"
-import { 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
+import { useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
+import {
+  Calendar,
+  Clock,
+  CheckCircle,
   LogOut,
   User,
   TrendingUp,
@@ -26,101 +31,117 @@ import {
   Briefcase,
   Building2,
   Lightbulb,
-  X
-} from "lucide-react"
-import Link from "next/link"
-import { apiClient, type Booking } from "@/lib/api"
-import { useAuth } from "@/contexts/auth-context"
-import Image from "next/image"
+  X,
+} from "lucide-react";
+import Link from "next/link";
+import { apiClient, type Booking } from "@/lib/api";
+import { useAuth } from "@/contexts/auth-context";
+import Image from "next/image";
+
+// Loading component for dashboard sections
+const DashboardLoader = () => (
+  <div className="flex items-center justify-center p-8">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+  </div>
+);
 
 export default function DashboardPage() {
-  const [bookings, setBookings] = useState<Booking[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  // const router = useRouter()
-  const { user, logout } = useAuth()
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user, logout } = useAuth();
+
+  const fetchBookings = useCallback(async () => {
+    try {
+      const response = await apiClient.getBookings();
+
+      if (response.success && response.data) {
+        setBookings(response.data.bookings || []);
+      } else {
+        toast.error(response.error || "Failed to fetch bookings");
+      }
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
-      fetchBookings()
+      fetchBookings();
     }
-  }, [user])
-
-  const fetchBookings = async () => {
-    try {
-      const response = await apiClient.getBookings()
-
-      if (response.success && response.data) {
-        setBookings(response.data.bookings || [])
-      } else {
-        toast.error(response.error || "Failed to fetch bookings")
-      }
-    } catch {
-      toast.error("Something went wrong")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  }, [user, fetchBookings]);
 
   const handleLogout = () => {
-    logout()
-    toast.success("Logged out successfully")
-  }
+    logout();
+    toast.success("Logged out successfully");
+  };
 
   const getPaymentStatusBadge = (status: string) => {
     switch (status) {
       case "SUCCESS":
-        return <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg">
-          <CheckCircle className="w-3 h-3 mr-1" />
-          Paid
-        </Badge>
+        return (
+          <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-lg">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Paid
+          </Badge>
+        );
       case "PENDING":
-        return <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg">
-          <Clock className="w-3 h-3 mr-1" />
-          Pending
-        </Badge>
+        return (
+          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-lg">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending
+          </Badge>
+        );
       case "FAILED":
-        return <Badge className="bg-gradient-to-r from-red-500 to-rose-500 text-white border-0 shadow-lg">
-          <X className="w-3 h-3 mr-1" />
-          Failed
-        </Badge>
+        return (
+          <Badge className="bg-gradient-to-r from-red-500 to-rose-500 text-white border-0 shadow-lg">
+            <X className="w-3 h-3 mr-1" />
+            Failed
+          </Badge>
+        );
       default:
-        return <Badge className="bg-gradient-to-r from-gray-500 to-slate-500 text-white border-0 shadow-lg">
-          {status}
-        </Badge>
+        return (
+          <Badge className="bg-gradient-to-r from-gray-500 to-slate-500 text-white border-0 shadow-lg">
+            {status}
+          </Badge>
+        );
     }
-  }
+  };
 
   const getConsultantTypeIcon = (type: string) => {
     switch (type) {
       case "CAREER_GUIDANCE":
-        return <TrendingUp className="w-5 h-5" />
+        return <TrendingUp className="w-5 h-5" />;
       case "COLLEGE_COURSE":
-        return <BookOpen className="w-5 h-5" />
+        return <BookOpen className="w-5 h-5" />;
       case "EXAM_PREPARATION":
-        return <Target className="w-5 h-5" />
+        return <Target className="w-5 h-5" />;
       case "STUDY_ABROAD":
-        return <Plane className="w-5 h-5" />
+        return <Plane className="w-5 h-5" />;
       case "SKILL_MENTORSHIP":
-        return <Users className="w-5 h-5" />
+        return <Users className="w-5 h-5" />;
       case "JOB_PLACEMENT":
-        return <Briefcase className="w-5 h-5" />
+        return <Briefcase className="w-5 h-5" />;
       case "GOVERNMENT_JOBS":
-        return <Building2 className="w-5 h-5" />
+        return <Building2 className="w-5 h-5" />;
       case "PERSONAL_GROWTH":
-        return <Star className="w-5 h-5" />
+        return <Star className="w-5 h-5" />;
       case "ALTERNATIVE_CAREERS":
-        return <Lightbulb className="w-5 h-5" />
+        return <Lightbulb className="w-5 h-5" />;
       default:
-        return <BookOpen className="w-5 h-5" />
+        return <BookOpen className="w-5 h-5" />;
     }
-  }
-
+  };
 
   const filteredBookings = {
     all: bookings,
-    pending: bookings.filter(booking => booking.status === "PENDING" || booking.status === "PROCESSING"),
-    completed: bookings.filter(booking => booking.status === "COMPLETED"),
-  }
+    pending: bookings.filter(
+      (booking) =>
+        booking.status === "PENDING" || booking.status === "PROCESSING"
+    ),
+    completed: bookings.filter((booking) => booking.status === "COMPLETED"),
+  };
 
   if (isLoading) {
     return (
@@ -128,35 +149,48 @@ export default function DashboardPage() {
         <div className="text-center">
           <div className="relative">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-            <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-purple-400 animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+            <div
+              className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-t-purple-400 animate-spin mx-auto"
+              style={{
+                animationDirection: "reverse",
+                animationDuration: "1.5s",
+              }}
+            ></div>
           </div>
-          <p className="mt-6 text-lg font-medium text-gray-700 dark:text-gray-300">Loading your dashboard...</p>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Please wait while we fetch your data</p>
+          <p className="mt-6 text-lg font-medium text-gray-700 dark:text-gray-300">
+            Loading your dashboard...
+          </p>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Please wait while we fetch your data
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5 dark:opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundRepeat: 'repeat'
-        }}></div>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundRepeat: "repeat",
+          }}
+        ></div>
       </div>
-      
+
       <div className="relative container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 space-y-4 lg:space-y-0">
           <div className="flex items-center space-x-4">
             <div className="relative">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <Image 
-                  src="/Logo.png" 
-                  alt="CarrierHub" 
-                  width={32} 
+                <Image
+                  src="/Logo.png"
+                  alt="CarrierHub"
+                  width={32}
                   height={32}
                   className="filter brightness-0 invert"
                 />
@@ -170,22 +204,28 @@ export default function DashboardPage() {
                 Dashboard
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-400 mt-1">
-                Welcome back, <span className="font-semibold text-blue-600 dark:text-blue-400">{user?.name || "User"}</span>! 👋
+                Welcome back,{" "}
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {user?.name || "User"}
+                </span>
+                ! 👋
               </p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <Button 
+            <Button
               onClick={fetchBookings}
               variant="outline"
               className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300"
               disabled={isLoading}
             >
-              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
-            <Button 
-              asChild 
+            <Button
+              asChild
               className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Link href="/">
@@ -194,8 +234,8 @@ export default function DashboardPage() {
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-            <Button 
-              onClick={handleLogout} 
+            <Button
+              onClick={handleLogout}
               variant="outline"
               className="border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-md hover:shadow-lg transition-all duration-300"
             >
@@ -216,12 +256,18 @@ export default function DashboardPage() {
                     <Calendar className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Bookings</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{bookings.length}</p>
+                    <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                      Total Bookings
+                    </p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                      {bookings.length}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">📊</div>
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    📊
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -236,14 +282,18 @@ export default function DashboardPage() {
                     <Clock className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">In Progress</p>
+                    <p className="text-sm font-medium text-orange-600 dark:text-orange-400">
+                      In Progress
+                    </p>
                     <p className="text-3xl font-bold text-gray-900 dark:text-white">
                       {filteredBookings.pending.length}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">⏳</div>
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                    ⏳
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -258,14 +308,18 @@ export default function DashboardPage() {
                     <CheckCircle className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">Completed</p>
+                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                      Completed
+                    </p>
                     <p className="text-3xl font-bold text-gray-900 dark:text-white">
                       {filteredBookings.completed.length}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">✅</div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    ✅
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -276,21 +330,21 @@ export default function DashboardPage() {
         <Tabs defaultValue="all" className="space-y-6">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-2 shadow-lg border border-gray-200 dark:border-gray-700">
             <TabsList className="grid w-full grid-cols-3 bg-transparent h-auto p-0">
-              <TabsTrigger 
-                value="all" 
+              <TabsTrigger
+                value="all"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-3 px-6 font-medium transition-all duration-300"
               >
                 <Calendar className="w-4 h-4 mr-2" />
                 All Bookings ({filteredBookings.all.length})
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="pending"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-3 px-6 font-medium transition-all duration-300"
               >
                 <Clock className="w-4 h-4 mr-2" />
                 In Progress ({filteredBookings.pending.length})
               </TabsTrigger>
-              <TabsTrigger 
+              <TabsTrigger
                 value="completed"
                 className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-xl py-3 px-6 font-medium transition-all duration-300"
               >
@@ -311,9 +365,13 @@ export default function DashboardPage() {
                     No bookings yet
                   </h3>
                   <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
-                    Start your journey by booking a consultation with our expert consultants and unlock your potential.
+                    Start your journey by booking a consultation with our expert
+                    consultants and unlock your potential.
                   </p>
-                  <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-3">
+                  <Button
+                    asChild
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-3"
+                  >
                     <Link href="/">
                       <BookOpen className="mr-2 h-5 w-5" />
                       Browse Categories
@@ -325,7 +383,10 @@ export default function DashboardPage() {
             ) : (
               <div className="grid gap-6">
                 {filteredBookings.all.map((booking) => (
-                  <Card key={booking.id} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 overflow-hidden">
+                  <Card
+                    key={booking.id}
+                    className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 overflow-hidden"
+                  >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
                     <CardHeader className="pb-4">
                       <div className="flex justify-between items-start">
@@ -335,15 +396,22 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
-                              {booking.consultantType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              {booking.consultantType
+                                .replace("_", " ")
+                                .toLowerCase()
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
                             </CardTitle>
                             <CardDescription className="text-gray-600 dark:text-gray-400 flex items-center mt-1">
                               <Calendar className="w-4 h-4 mr-2" />
-                              Booked on {new Date(booking.createdAt).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
+                              Booked on{" "}
+                              {new Date(booking.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </CardDescription>
                           </div>
                         </div>
@@ -360,8 +428,12 @@ export default function DashboardPage() {
                               <DollarSign className="w-4 h-4 text-white" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Amount</p>
-                              <p className="text-lg font-bold text-gray-900 dark:text-white">₹{(booking.amount / 100).toFixed(2)}</p>
+                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                Amount
+                              </p>
+                              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                                ₹{(booking.amount / 100).toFixed(2)}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -371,8 +443,12 @@ export default function DashboardPage() {
                               <BookOpen className="w-4 h-4 text-white" />
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Details</p>
-                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{booking.details}</p>
+                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Details
+                              </p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {booking.details}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -395,14 +471,18 @@ export default function DashboardPage() {
                     No pending consultations
                   </h3>
                   <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                    All your consultations are either completed or you haven&apos;t booked any yet.
+                    All your consultations are either completed or you
+                    haven&apos;t booked any yet.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-6">
                 {filteredBookings.pending.map((booking) => (
-                  <Card key={booking.id} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 overflow-hidden">
+                  <Card
+                    key={booking.id}
+                    className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 overflow-hidden"
+                  >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 via-red-500 to-pink-500"></div>
                     <CardHeader className="pb-4">
                       <div className="flex justify-between items-start">
@@ -412,15 +492,22 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors duration-300">
-                              {booking.consultantType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              {booking.consultantType
+                                .replace("_", " ")
+                                .toLowerCase()
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
                             </CardTitle>
                             <CardDescription className="text-gray-600 dark:text-gray-400 flex items-center mt-1">
                               <Clock className="w-4 h-4 mr-2" />
-                              Booked on {new Date(booking.createdAt).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
+                              Booked on{" "}
+                              {new Date(booking.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </CardDescription>
                           </div>
                         </div>
@@ -437,8 +524,12 @@ export default function DashboardPage() {
                               <DollarSign className="w-4 h-4 text-white" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Amount</p>
-                              <p className="text-lg font-bold text-gray-900 dark:text-white">₹{(booking.amount / 100).toFixed(2)}</p>
+                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                Amount
+                              </p>
+                              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                                ₹{(booking.amount / 100).toFixed(2)}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -448,8 +539,12 @@ export default function DashboardPage() {
                               <BookOpen className="w-4 h-4 text-white" />
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Details</p>
-                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{booking.details}</p>
+                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Details
+                              </p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {booking.details}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -472,14 +567,18 @@ export default function DashboardPage() {
                     No completed consultations
                   </h3>
                   <p className="text-lg text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-                    Your completed consultations will appear here once they&apos;re finished.
+                    Your completed consultations will appear here once
+                    they&apos;re finished.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-6">
                 {filteredBookings.completed.map((booking) => (
-                  <Card key={booking.id} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 overflow-hidden">
+                  <Card
+                    key={booking.id}
+                    className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white dark:bg-gray-800 overflow-hidden"
+                  >
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500"></div>
                     <CardHeader className="pb-4">
                       <div className="flex justify-between items-start">
@@ -489,15 +588,22 @@ export default function DashboardPage() {
                           </div>
                           <div>
                             <CardTitle className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
-                              {booking.consultantType.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              {booking.consultantType
+                                .replace("_", " ")
+                                .toLowerCase()
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
                             </CardTitle>
                             <CardDescription className="text-gray-600 dark:text-gray-400 flex items-center mt-1">
                               <CheckCircle className="w-4 h-4 mr-2" />
-                              Completed on {new Date(booking.updatedAt).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
-                              })}
+                              Completed on{" "}
+                              {new Date(booking.updatedAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </CardDescription>
                           </div>
                         </div>
@@ -514,8 +620,12 @@ export default function DashboardPage() {
                               <DollarSign className="w-4 h-4 text-white" />
                             </div>
                             <div>
-                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Amount</p>
-                              <p className="text-lg font-bold text-gray-900 dark:text-white">₹{(booking.amount / 100).toFixed(2)}</p>
+                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                Amount
+                              </p>
+                              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                                ₹{(booking.amount / 100).toFixed(2)}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -525,8 +635,12 @@ export default function DashboardPage() {
                               <BookOpen className="w-4 h-4 text-white" />
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Details</p>
-                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{booking.details}</p>
+                              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                Details
+                              </p>
+                              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                {booking.details}
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -540,5 +654,5 @@ export default function DashboardPage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

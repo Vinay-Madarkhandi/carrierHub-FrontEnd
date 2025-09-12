@@ -5,14 +5,6 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
-// import { 
-//   NavigationMenu,
-//   NavigationMenuContent,
-//   NavigationMenuItem,
-//   NavigationMenuLink,
-//   NavigationMenuList,
-//   NavigationMenuTrigger,
-// } from "@/components/ui/navigation-menu"
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -25,13 +17,21 @@ import { useAuth } from "@/contexts/auth-context"
 import { useAdmin } from "@/contexts/admin-context"
 import { LogOut, Shield, Menu, X, Home, BarChart3 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useState } from "react"
+import { useState, useCallback, useMemo, memo } from "react"
 
-export function Navbar() {
+export const Navbar = memo(function Navbar() {
   const pathname = usePathname()
   const { user, isAuthenticated, logout } = useAuth()
   const { admin, isAuthenticated: isAdminAuthenticated, logout: adminLogout } = useAdmin()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenuOpen(prev => !prev)
+  }, [])
+
+  const closeMobileMenu = useCallback(() => {
+    setMobileMenuOpen(false)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200/50 dark:border-gray-800/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 shadow-sm">
@@ -314,4 +314,4 @@ export function Navbar() {
       </div>
     </header>
   )
-}
+})

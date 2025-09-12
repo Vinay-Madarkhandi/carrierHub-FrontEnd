@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo, lazy, Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -126,6 +126,28 @@ export default function AdminDashboard() {
     return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
+  // Memoized filtered bookings for performance
+  const filteredBookings = useMemo(() => {
+    return bookings.filter(booking => {
+      const matchesSearch = !searchTerm || 
+        booking.student?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        booking.student?.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      
+      const matchesStatus = statusFilter === "all" || booking.status === statusFilter
+      const matchesType = typeFilter === "all" || booking.consultantType === typeFilter
+      
+      return matchesSearch && matchesStatus && matchesType
+    })
+  }, [bookings, searchTerm, statusFilter, typeFilter])
+
+  // Memoized filtered users for performance
+  const filteredUsers = useMemo(() => {
+    return users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  }, [users, searchTerm])
+
   if (loading && bookings.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -219,13 +241,13 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              {bookings.length === 0 ? (
+              {filteredBookings.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No bookings found</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {bookings.map((booking) => (
+                  {filteredBookings.map((booking) => (
                     <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
                         <div className="flex-1">
@@ -295,13 +317,13 @@ export default function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {users.length === 0 ? (
+              {filteredUsers.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-gray-500">No users found</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">

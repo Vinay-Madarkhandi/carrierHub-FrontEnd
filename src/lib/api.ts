@@ -1,25 +1,12 @@
 import { getToken } from './auth-utils'
+import { clientCache, CACHE_KEYS, CACHE_TTL, withCache } from './cache'
+import { logger } from './logger'
 
-// Dynamic API URL configuration
-const getApiUrl = () => {
-  // Use environment variable or fallback to production URL with /api base path
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://carrierhub-backend.onrender.com'
-  // Ensure the URL ends with /api for proper endpoint construction
-  return baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`
-}
+// API URL configuration - use exact URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carrierhub-backend.onrender.com/api'
 
-// Initialize API_BASE_URL safely
-let API_BASE_URL = 'https://carrierhub-backend.onrender.com/api'
-
-try {
-  API_BASE_URL = getApiUrl()
-} catch (error) {
-  console.warn('Error initializing API URL:', error)
-  API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://carrierhub-backend.onrender.com/api'
-}
-
-// Debug logging
-console.log('🔧 API Configuration:', {
+// Log API configuration in development
+logger.debug('API Configuration', {
   NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
   API_BASE_URL: API_BASE_URL,
   isClient: typeof window !== 'undefined',
@@ -128,83 +115,114 @@ export class ApiClient {
       ...options,
     }
 
-    // Debug logging
-    console.log('🌐 API Request:', {
-      baseURL: this.baseURL,
-      endpoint,
-      fullUrl: url,
-      method: options.method || 'GET',
+    // Log API request in development
+    logger.apiRequest(options.method || 'GET', `${this.baseURL}${endpoint}`, {
       hasToken: !!token,
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'Server'
+      useAdminToken,
+      endpoint
     })
 
-    try {
-      // Add timeout to prevent infinite loading
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+    // Retry mechanism with exponential backoff
+    const maxRetries = 3
+    let retryCount = 0
+    
+    while (retryCount <= maxRetries) {
+      try {
+        // Add timeout to prevent infinite loading
+        const controller = new AbortController()
+        const timeoutDuration = 15000 + (retryCount * 5000) // Increase timeout with retries
+        const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
 
-      console.log('🌐 Making fetch request to:', url)
-      console.log('🌐 Request config:', config)
+        logger.debug(`Making fetch request to: ${url} (attempt ${retryCount + 1}/${maxRetries + 1})`)
+        logger.debug('Request config', config)
 
-      const response = await fetch(url, {
-        ...config,
-        signal: controller.signal
-      })
-      
-      clearTimeout(timeoutId)
-      
-      console.log('📡 Response status:', response.status)
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
-      
-      if (!response.ok) {
-        console.error('❌ Response not OK:', response.status, response.statusText)
-      }
-      
-      const data = await response.json()
-
-      console.log('📡 API Response:', {
-        status: response.status,
-        ok: response.ok,
-        data: data
-      })
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: data.message || data.error || `Request failed with status ${response.status}`,
-          details: data.details || []
-        }
-      }
-
-      return {
-        success: true,
-        data: data.data || data,
-        message: data.message
-      }
-    } catch (error) {
-      console.error('❌ API Error:', error)
-      console.error('❌ Error type:', error instanceof Error ? error.constructor.name : typeof error)
-      console.error('❌ Error message:', error instanceof Error ? error.message : String(error))
-      console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace')
-      
-      let errorMessage = 'Network error'
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          errorMessage = 'Request timeout - please check your connection'
-        } else if (error.message.includes('Failed to fetch')) {
-          errorMessage = 'Cannot connect to server - this might be a CORS issue or network problem'
-        } else if (error.message.includes('CORS')) {
-          errorMessage = 'CORS error - backend needs to allow requests from this domain'
+        const response = await fetch(url, {
+          ...config,
+          signal: controller.signal
+        })
+        
+        clearTimeout(timeoutId)
+        
+        logger.debug('Response status:', response.status)
+        logger.debug('Response headers:', Object.fromEntries(response.headers.entries()))
+        
+        if (!response.ok) {
+          logger.error('Response not OK', { status: response.status, statusText: response.statusText })
+          
+          // Don't retry for client errors (4xx), only server errors (5xx) and network issues
+          if (response.status >= 400 && response.status < 500) {
+            const data = await response.json().catch(() => ({ message: 'Client error' }))
+            return {
+              success: false,
+              error: data.message || data.error || `Request failed with status ${response.status}`,
+              details: data.details || []
+            }
+          }
+          
+          // For server errors, try to get error message but continue to retry logic
+          if (retryCount === maxRetries) {
+            const data = await response.json().catch(() => ({ message: 'Server error' }))
+            return {
+              success: false,
+              error: data.message || data.error || `Server error (${response.status}). Please try again later.`,
+              details: data.details || []
+            }
+          }
         } else {
-          errorMessage = error.message
+          // Success case
+          const data = await response.json()
+
+          logger.apiResponse(response.status, url, data)
+
+          return {
+            success: true,
+            data: data.data || data,
+            message: data.message
+          }
+        }
+      } catch (error) {
+        logger.apiError(error, `attempt ${retryCount + 1}/${maxRetries + 1}`)
+        
+        // If this is the last retry, return the error
+        if (retryCount === maxRetries) {
+          let errorMessage = 'Network error - server may be temporarily unavailable'
+          if (error instanceof Error) {
+            if (error.name === 'AbortError') {
+              errorMessage = 'Request timeout - server is taking too long to respond. Please try again later.'
+            } else if (error.message.includes('Failed to fetch')) {
+              errorMessage = 'Cannot connect to server - please check your internet connection or try again later'
+            } else if (error.message.includes('CORS')) {
+              errorMessage = 'CORS error - please contact support if this persists'
+            } else if (error.message.includes('NetworkError')) {
+              errorMessage = 'Network error - please check your connection and try again'
+            } else {
+              errorMessage = `Connection error: ${error.message}. Please try again later.`
+            }
+          }
+          
+          return {
+            success: false,
+            error: errorMessage,
+            details: []
+          }
         }
       }
       
-      return {
-        success: false,
-        error: errorMessage,
-        details: []
+      // Wait before retrying (exponential backoff)
+      if (retryCount < maxRetries) {
+        const waitTime = Math.min(1000 * Math.pow(2, retryCount), 10000) // Cap at 10 seconds
+        logger.debug(`Retrying in ${waitTime}ms...`)
+        await new Promise(resolve => setTimeout(resolve, waitTime))
       }
+      
+      retryCount++
+    }
+    
+    // This should never be reached, but just in case
+    return {
+      success: false,
+      error: 'Maximum retry attempts exceeded. Please try again later.',
+      details: []
     }
   }
 
@@ -235,9 +253,13 @@ export class ApiClient {
     return this.request('/auth/me')
   }
 
-  // Categories endpoint
+  // Categories endpoint with caching
   async getCategories(): Promise<ApiResponse<{ categories: Category[] }>> {
-    return this.request('/categories')
+    return withCache(
+      CACHE_KEYS.CATEGORIES,
+      () => this.request('/categories'),
+      CACHE_TTL.LONG
+    )
   }
 
   // Booking endpoints
@@ -246,10 +268,24 @@ export class ApiClient {
     details: string
     amount: number
   }): Promise<ApiResponse<{ booking: Booking }>> {
-    return this.request('/bookings', {
+    const result = await this.request<{ booking: Booking }>('/bookings', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     })
+    
+    // Invalidate bookings cache after creating new booking
+    if (result.success) {
+      clientCache.delete(CACHE_KEYS.BOOKINGS)
+      // Clear all booking-related cache entries
+      const keys = clientCache.keys()
+      keys.forEach(key => {
+        if (key.startsWith(CACHE_KEYS.BOOKINGS)) {
+          clientCache.delete(key)
+        }
+      })
+    }
+    
+    return result
   }
 
   async getBookings(params?: {
@@ -261,7 +297,13 @@ export class ApiClient {
     if (params?.limit) queryParams.append('limit', params.limit.toString())
     
     const endpoint = `/bookings/me${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
-    return this.request(endpoint)
+    const cacheKey = `${CACHE_KEYS.BOOKINGS}_${queryParams.toString() || 'default'}`
+    
+    return withCache(
+      cacheKey,
+      () => this.request(endpoint),
+      CACHE_TTL.SHORT
+    )
   }
 
   async getBooking(bookingId: number): Promise<ApiResponse<{ booking: Booking }>> {
@@ -348,13 +390,48 @@ export class ApiClient {
 
   // Test connectivity method
   async testConnection(): Promise<ApiResponse<unknown>> {
-    console.log('🔧 Testing connection to:', this.baseURL)
+    logger.debug('Testing connection to:', this.baseURL)
     return this.request('/categories')
   }
 
   // Health check endpoint
   async healthCheck(): Promise<ApiResponse<{ status: string; timestamp: string }>> {
-    return this.request('/health')
+    try {
+      // Use a simple GET request with shorter timeout for health checks
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout for health checks
+      
+      // Health endpoint is at root level, not under /api
+      const healthUrl = this.baseURL.replace('/api', '') + '/health'
+      
+      const response = await fetch(healthUrl, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      clearTimeout(timeoutId)
+      
+      if (response.ok) {
+        const data = await response.json()
+        return {
+          success: true,
+          data: data.data || { status: 'ok', timestamp: new Date().toISOString() }
+        }
+      } else {
+        return {
+          success: false,
+          error: 'Health check failed'
+        }
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Health check failed'
+      }
+    }
   }
 
   // Get all bookings for admin (with filters)

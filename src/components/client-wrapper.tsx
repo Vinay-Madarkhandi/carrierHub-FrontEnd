@@ -14,14 +14,11 @@ export function ClientWrapper({ children }: ClientWrapperProps) {
     setIsHydrated(true)
   }, [])
 
-  // Show loading state during hydration to prevent mismatches
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  return <>{children}</>
+  // Always render children to prevent hydration mismatch
+  // Use CSS to hide content during hydration instead
+  return (
+    <div className={isHydrated ? '' : 'opacity-0'}>
+      {children}
+    </div>
+  )
 }

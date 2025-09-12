@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Admin {
@@ -68,30 +68,30 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const login = (token: string, adminData: Admin) => {
+  const login = useCallback((token: string, adminData: Admin) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('adminToken', token)
       localStorage.setItem('adminUser', JSON.stringify(adminData))
     }
     setAdmin(adminData)
-  }
+  }, [])
 
-  const logout = () => {
+  const logout = useCallback(() => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('adminToken')
       localStorage.removeItem('adminUser')
     }
     setAdmin(null)
     router.push("/admin/login")
-  }
+  }, [router])
 
-  const value = {
+  const value = useMemo(() => ({
     admin,
     isAuthenticated: !!admin,
     isLoading,
     login,
     logout,
-  }
+  }), [admin, isLoading, login, logout])
 
   return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>
 }
