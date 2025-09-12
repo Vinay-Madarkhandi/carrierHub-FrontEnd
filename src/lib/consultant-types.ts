@@ -42,7 +42,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Resume and portfolio review",
       "Interview preparation",
     ],
-    price: 500,
+    price: 10,
     duration: "60 min session",
   },
   COLLEGE_COURSE: {
@@ -57,7 +57,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Scholarship opportunities",
       "Future career prospects",
     ],
-    price: 800,
+    price: 10,
     duration: "45 min session",
   },
   EXAM_PREPARATION: {
@@ -72,7 +72,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Mock test analysis",
       "Stress management techniques",
     ],
-    price: 600,
+    price: 10,
     duration: "45 min session",
   },
   STUDY_ABROAD: {
@@ -87,7 +87,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Scholarship opportunities",
       "Cultural adaptation tips",
     ],
-    price: 1200,
+    price: 10,
     duration: "90 min session",
   },
   SKILL_MENTORSHIP: {
@@ -102,7 +102,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Industry best practices",
       "Portfolio development",
     ],
-    price: 700,
+    price: 10,
     duration: "75 min session",
   },
   JOB_PLACEMENT: {
@@ -117,7 +117,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Interview preparation",
       "Salary negotiation tips",
     ],
-    price: 900,
+    price: 10,
     duration: "60 min session",
   },
   GOVERNMENT_JOBS: {
@@ -132,7 +132,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Previous year papers",
       "Current affairs guidance",
     ],
-    price: 600,
+    price: 10,
     duration: "60 min session",
   },
   PERSONAL_GROWTH: {
@@ -147,7 +147,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Confidence building",
       "Goal achievement strategies",
     ],
-    price: 500,
+    price: 10,
     duration: "60 min session",
   },
   ALTERNATIVE_CAREERS: {
@@ -162,7 +162,7 @@ export const consultantTypeMap: Record<ConsultantType, ConsultantTypeConfig> = {
       "Creative career paths",
       "Market demand analysis",
     ],
-    price: 600,
+    price: 10,
     duration: "75 min session",
   },
 };
