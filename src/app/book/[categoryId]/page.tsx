@@ -53,17 +53,17 @@ const categoryIdToTypeMap: Record<string, ConsultantType> = {
 };
 
 // Default pricing (in paise - aligned with backend pricing)
-// Backend: ₹500-1200, Frontend: ₹500-1200 (consistent)
+// Backend: ₹10, Frontend: ₹10 (consistent)
 const defaultPricing: Record<ConsultantType, number> = {
-  CAREER_GUIDANCE: 50000, // ₹500
-  COLLEGE_COURSE: 80000, // ₹800
-  EXAM_PREPARATION: 60000, // ₹600
-  STUDY_ABROAD: 120000, // ₹1200
-  SKILL_MENTORSHIP: 70000, // ₹700
-  JOB_PLACEMENT: 90000, // ₹900
-  GOVERNMENT_JOBS: 60000, // ₹600
-  PERSONAL_GROWTH: 50000, // ₹500
-  ALTERNATIVE_CAREERS: 60000, // ₹600
+  CAREER_GUIDANCE: 1000, // ₹10
+  COLLEGE_COURSE: 1000, // ₹10
+  EXAM_PREPARATION: 1000, // ₹10
+  STUDY_ABROAD: 1000, // ₹10
+  SKILL_MENTORSHIP: 1000, // ₹10
+  JOB_PLACEMENT: 1000, // ₹10
+  GOVERNMENT_JOBS: 1000, // ₹10
+  PERSONAL_GROWTH: 1000, // ₹10
+  ALTERNATIVE_CAREERS: 1000, // ₹10
 };
 
 export default function BookingPage({

@@ -86,7 +86,7 @@ const consultantTypeMap: Record<
       "Resume and portfolio review",
       "Interview preparation",
     ],
-    price: 500, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "60 min session",
   },
   COLLEGE_COURSE: {
@@ -101,7 +101,7 @@ const consultantTypeMap: Record<
       "Scholarship opportunities",
       "Future career prospects",
     ],
-    price: 800, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "45 min session",
   },
   EXAM_PREPARATION: {
@@ -116,7 +116,7 @@ const consultantTypeMap: Record<
       "Mock test analysis",
       "Stress management techniques",
     ],
-    price: 600, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "45 min session",
   },
   STUDY_ABROAD: {
@@ -131,7 +131,7 @@ const consultantTypeMap: Record<
       "Scholarship opportunities",
       "Cultural adaptation tips",
     ],
-    price: 1200, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "90 min session",
   },
   SKILL_MENTORSHIP: {
@@ -146,7 +146,7 @@ const consultantTypeMap: Record<
       "Industry best practices",
       "Portfolio development",
     ],
-    price: 700, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "75 min session",
   },
   JOB_PLACEMENT: {
@@ -161,7 +161,7 @@ const consultantTypeMap: Record<
       "Interview preparation",
       "Salary negotiation tips",
     ],
-    price: 900, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "60 min session",
   },
   GOVERNMENT_JOBS: {
@@ -176,7 +176,7 @@ const consultantTypeMap: Record<
       "Previous year papers",
       "Current affairs guidance",
     ],
-    price: 600, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "60 min session",
   },
   PERSONAL_GROWTH: {
@@ -191,7 +191,7 @@ const consultantTypeMap: Record<
       "Confidence building",
       "Goal achievement strategies",
     ],
-    price: 500, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "60 min session",
   },
   ALTERNATIVE_CAREERS: {
@@ -206,7 +206,7 @@ const consultantTypeMap: Record<
       "Creative career paths",
       "Market demand analysis",
     ],
-    price: 600, // Updated to match backend pricing
+    price: 10, // Updated to match backend pricing
     duration: "75 min session",
   },
 };
