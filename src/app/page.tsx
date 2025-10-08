@@ -654,7 +654,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
               <p className="text-gray-400 text-xs sm:text-sm flex items-center">
                 <Shield className="w-3 h-3 sm:w-4 sm:h-4 mr-2 text-gray-500 flex-shrink-0" />
-                © 2024 CarrierHub. All rights reserved.
+                © 2025 CarrierHub. All rights reserved.
               </p>
               <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-xs sm:text-sm">
                 <span className="text-gray-400 flex items-center">
